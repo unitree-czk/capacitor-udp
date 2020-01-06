@@ -1,4 +1,4 @@
-UDP Plugin for Capacitor for from cordova-plugin-chrome-apps-sockets-udp
+UDP Plugin for Capacitor inspired from cordova-plugin-chrome-apps-sockets-udp
 
 ## Install
 
@@ -75,3 +75,12 @@ For android, the native function multicastSocket.setLoopbackMode(!enabled); does
 
 If you know anything about it, please do help me!
 
+```js
+UdpPlugin.addListener("receive", data => {
+    yourArrayBuffer = UdpPluginUtils.stringToBuffer(data)
+}});
+UdpPlugin.addListener("receiveError", error => {console.log(error)});
+```
+
+you can receive strings directly, but since there is no support for ArrayBuffer currently from Capacitor team,
+you can use my utils.
