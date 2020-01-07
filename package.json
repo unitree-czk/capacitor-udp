@@ -28,8 +28,12 @@
   ],
   "keywords": [
     "capacitor",
+    "udp",
     "plugin",
-    "native"
+    "native",
+    "socket",
+    "android",
+    "ios"
   ],
   "capacitor": {
     "ios": {

@@ -104,5 +104,6 @@
     <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:monitor:1.0.2@aar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test.espresso:espresso-idling-resource:3.0.2@aar" level="project" />
     <orderEntry type="module" module-name="capacitor-android" />
+    <orderEntry type="module" module-name="capacitor-android" />
   </component>
 </module>
