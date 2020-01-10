@@ -58,4 +58,32 @@ export interface UdpPluginPlugin {
             localPort?: number;
         }];
     }>;
+    joinGroup(options: {
+        socketId: number;
+        address: string;
+    }): Promise<{}>;
+    leaveGroup(options: {
+        socketId: number;
+        address: string;
+    }): Promise<{}>;
+    setMulticastTimeToLive(options: {
+        socketId: number;
+        ttl: number;
+    }): Promise<{}>;
+    setBroadcast(options: {
+        socketId: number;
+        enabled: boolean;
+    }): Promise<{}>;
+    setMulticastLoopbackMode(options: {
+        socketId: number;
+        enabled: boolean;
+    }): Promise<{}>;
+    getJoinedGroups(): Promise<{
+        groups: [string];
+    }>;
+    addListener(events: "receive", functions: (params: {
+        socketId: number;
+        buffer: string;
+    }) => void): void;
+    addListener(events: "receiveError", functions: (params: string) => void): void;
 }

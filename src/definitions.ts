@@ -20,4 +20,6 @@ export interface UdpPluginPlugin {
  setBroadcast(options:{socketId:number,enabled:boolean}):Promise<{}>;
  setMulticastLoopbackMode(options:{socketId:number,enabled:boolean}):Promise<{}>;
  getJoinedGroups():Promise<{groups:[string]}>;
+ addListener(events:"receive", functions: (params:{socketId:number,buffer:string}) => void ) :void;
+ addListener(events:"receiveError", functions:(params:string) => void ):void;
 }
