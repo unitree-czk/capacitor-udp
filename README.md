@@ -1,3 +1,4 @@
+# Capacitor UDP
 UDP Plugin for Capacitor inspired from cordova-plugin-chrome-apps-sockets-udp!
 Support both IPv6 and IPv4, multicast and broadcast!
 
@@ -54,25 +55,25 @@ Events:
 - [receive](#receive-event)
 - [receiveError](#receive-error-event)
 
-## Create ##
+### Create ###
 Create a socket for udp, and you can create more than one differentiated by the socket id. 
 ```js
 UdpPlugin.create({properties: { name: "yourSocketName", bufferSize: 2048 }} ).then(res=>{socketId = res.socketId});
 ```
 
-## Update ##
+### Update ###
 Update the socket info including socket name and buffer size.
 ```js
 UdpPlugin.update( {socketId: yourSocketId, properties: { name: "socketname", bufferSize: 2048 }} )
 ```
 
-## Bind ##
+### Bind ###
 You need to bind a socket before sending and receiving data.
 ```js
 UdpPlugin.bind({ socketId: yourSocketId, port: 5000})
 ```
 
-## Send ##
+### Send ###
 Capacitor doesn't support Arraybuffer for now, so I need to convert ArrayBuffer to base64 string. 
 I have provided a util function to help you achieve that!
 ```js
@@ -80,24 +81,24 @@ UdpPlugin.send({ socketId: yourSocketId, address: targetAddress, port: 6000, buf
 UdpPlugin.send({ socketId: yourSocketId, address: targetAddress, port: 6000, buffer: UdpPluginUtils.bufferToString(data)}) // data is of type ArrayBuffer
 ```
 
-## Close ##
+### Close ###
 Close one socket
 ```js
 UdpPlugin.close({ socketId: yourSocketId }) 
 ```
 
-## Close All Sockets ##
+### Close All Sockets ###
 ```js
 UdpPlugin.closeAllSockets() 
 ```
 
-## Set Broadcast ##
+### Set Broadcast ###
 After enabling broadcasting, you can send data with target address 255.255.255.255.
 ```js
 UdpPlugin.setBroadcast({socketId: yourSocketId,enabled: enableBroadcastOrNot}) 
 ```
 
-## Get Sockets ##
+### Get Sockets ###
 Obtain all the sockets available.
 
 ```js
@@ -106,7 +107,7 @@ UdpPlugin.getSockets().then(res=>{
 })
 ```
 
-## Join Group ##
+### Join Group ###
 Join a particular group address.
 For IPv4, it's like "238.12.12.12".
 For IPv6, it's like "ff02::08".
@@ -114,30 +115,30 @@ For IPv6, it's like "ff02::08".
 UdpPlugin.joinGroup({socketId: yourSocketId, address: multicastAddress})
 ```
 
-## Leave Group ##
+### Leave Group ###
 ```js
 UdpPlugin.leaveGroup({socketId: yourSocketId, address: multicastAddress})
 ```
 
-## Get Joined Groups ##
+### Get Joined Groups ###
 ```js
 UdpPlugin.getJoinedGroups({ socketId: yourSocketId }).then(res=>{
     // res contains your group addresses
 })
 ```
 
-## Set Paused ##
+### Set Paused ###
 Pause receiving data.
 ```js
 UdpPlugin.setPaused({socketId: yourSocketId,paused: pauseOrNot})
 ```
 
-## Set Multicast Loopback Mode ##
+### Set Multicast Loopback Mode ###
 ```js
 UdpPlugin.setMulticastLoopbackMode({socketId: yourSocketId, enabled: enabledOrNot})
 ```
 
-## Receive Event ##
+### Receive Event ###
 ```js
 UdpPlugin.addListener("receive", data => {
     yourArrayBuffer = UdpPluginUtils.stringToBuffer(data)
@@ -145,7 +146,7 @@ UdpPlugin.addListener("receive", data => {
 ```
 For understanding ArrayBuffer, you can refer to [Typed Arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
 
-## Receive Error Event ##
+### Receive Error Event ###
 ```js
 UdpPlugin.addListener("receiveError", error => {console.log(error)});
 ```
