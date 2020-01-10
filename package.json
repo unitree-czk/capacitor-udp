@@ -1,6 +1,6 @@
 {
   "name": "capacitor-udp",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "udp plugin",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -16,9 +16,9 @@
     "@capacitor/core": "latest"
   },
   "devDependencies": {
-    "typescript": "^3.2.4",
+    "@capacitor/android": "latest",
     "@capacitor/ios": "latest",
-    "@capacitor/android": "latest"
+    "typescript": "^3.7.4"
   },
   "files": [
     "dist/",

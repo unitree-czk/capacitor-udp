@@ -1,7 +1,6 @@
 import { WebPlugin } from '@capacitor/core';
-import { UdpPluginPlugin } from './definitions';
 
-export class UdpPluginWeb extends WebPlugin implements UdpPluginPlugin {
+export class UdpPluginWeb extends WebPlugin  {
   constructor() {
     super({
       name: 'UdpPlugin',
@@ -9,15 +8,10 @@ export class UdpPluginWeb extends WebPlugin implements UdpPluginPlugin {
     });
   }
 
-  async echo(options: { value: string }): Promise<{value: string}> {
-    console.log('ECHO', options);
-    return options;
-  }
 }
 
 const UdpPlugin = new UdpPluginWeb();
 
 export { UdpPlugin };
-
 import { registerWebPlugin } from '@capacitor/core';
 registerWebPlugin(UdpPlugin);

@@ -8,11 +8,11 @@ export const UdpPluginUtils = {
     stringToBuffer: function (base64String) {
         const str = atob(base64String);
         if (textEncoder) {
-            return textEncoder.encode(str);
+            return textEncoder.encode(str).buffer;
         }
         else {
-            var buf = new ArrayBuffer(str.length);
-            var bufView = new Uint8Array(buf);
+            let buf = new ArrayBuffer(str.length);
+            let bufView = new Uint8Array(buf);
             for (var i = 0, strLen = str.length; i < strLen; i++) {
                 bufView[i] = str.charCodeAt(i);
             }
