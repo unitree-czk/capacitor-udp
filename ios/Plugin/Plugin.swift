@@ -345,6 +345,5 @@ public class UdpPlugin: CAPPlugin {
             plugin?.notifyListeners("receiveError", data: ["socketId":self.socketId ,"error":"socket closed"], retainUntilConsumed: false)
         }
         
-        
     }
 }
