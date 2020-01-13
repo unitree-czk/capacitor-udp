@@ -32,6 +32,13 @@ import { Plugins } from "@capacitor/core";
 const { UdpPlugin } = Plugins;
 import {UdpPluginUtils} from "capacitor-udp"; // if you want support for converting between ArrayBuffer and String
 ```
+For intellisense or typescript, you might need to edit the file in @capacitor/core/dist/esm/core-plugin-definitions.ts. Make sure that this file is actually loaded, since there might be other node_modules folders.
+
+For VS Code on Mac, 
+```js
+declare module '@capacitor/core'
+```
+sometimes fail to work as expected. I guess the dirty solution like changing the core-plugin-definitions.ts might be the most trust-worthy solution. 
 
 ## API Reference
 

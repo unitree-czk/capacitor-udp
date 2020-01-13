@@ -1,10 +1,10 @@
-declare module '@capacitor/core' {
+declare module "@capacitor/core" {
   interface PluginRegistry {
-    UdpPlugin: UdpPluginPlugin;
+    UdpPlugin: IUdpPlugin;
   }
 }
 
-export interface UdpPluginPlugin {
+export interface IUdpPlugin {
  create(options?: { properties?: {name?:string, bufferSize?: number} }): Promise<{socketId: number}>;
  update(options: { socketId:number, properties: {name?:string, bufferSize?: number} }): Promise<{}>;
  setPaused(options: {socketId:number, paused:boolean}): Promise<{}>;

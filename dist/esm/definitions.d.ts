@@ -1,9 +1,9 @@
-declare module '@capacitor/core' {
+declare module "@capacitor/core" {
     interface PluginRegistry {
-        UdpPlugin: UdpPluginPlugin;
+        UdpPlugin: IUdpPlugin;
     }
 }
-export interface UdpPluginPlugin {
+export interface IUdpPlugin {
     create(options?: {
         properties?: {
             name?: string;
