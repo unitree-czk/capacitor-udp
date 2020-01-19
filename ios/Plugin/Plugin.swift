@@ -11,6 +11,29 @@ public class UdpPlugin: CAPPlugin {
     private var sockets: [Int: UdpSocket] = [Int: UdpSocket]()
     private var nextSocketId: Int = 0
     
+    public override func load() {
+       NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "capacitor-udp-forward"), object: nil, queue: nil, using: handleUdpForward )
+    }
+    
+    private func handleUdpForward(_ notification: Notification) -> Void {
+        let socketId:Int = notification.userInfo?["socketId"] as? Int ?? -1;
+        var address:String = notification.userInfo?["address"] as? String ?? "";
+        let port = notification.userInfo?["port"] as? Int ?? -1;
+        let socket = sockets[socketId];
+        let data = notification.userInfo?["data"] as? Data ?? Data.init();
+        if(socket == nil || port < 0 || address == "" || socket?.isBound == false) {
+            return;
+        }
+        if(!(socket?.broadcastEnabled ?? false) && address.trimmingCharacters(in: .whitespacesAndNewlines) == "255.255.255.255"){
+            return;
+        }
+        if(address.contains(":") && (!address.contains("%"))){
+            address = address + "%en0"
+        }
+        socket?.socket?.send(data, toHost: address, port: (port as NSNumber).uint16Value, withTimeout: -1, tag: -1)
+    }
+    
+    
     @objc func create(_ call: CAPPluginCall) {
         let properties = call.getObject("properties")
         let socket = UdpSocket.init(plugin: self, id: nextSocketId, properties: properties)

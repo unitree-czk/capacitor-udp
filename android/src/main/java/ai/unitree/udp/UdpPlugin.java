@@ -1,5 +1,10 @@
 package ai.unitree.udp;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.Base64;
 
@@ -47,9 +52,27 @@ public class UdpPlugin extends Plugin {
     private SelectorThread selectorThread;
 
 
+    private BroadcastReceiver dataForwardReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int socketId = intent.getIntExtra("socketId", -1);
+            String address = intent.getStringExtra("address");
+            int port = intent.getIntExtra("port", -1);
+            byte [] data = intent.getByteArrayExtra("data");
+            try {
+                UdpSocket socket = obtainSocket(socketId);
+                if (!socket.isBound) throw new Exception("Not bound yet");
+                socket.addSendPacket(address, port, data, null);
+                addSelectorMessage(socket, SelectorMessageType.SO_ADD_WRITE_INTEREST, null);
+            } catch (Exception e){}
+
+        }
+    };
+
     @Override
     protected void handleOnStart() {
         startSelectorThread();
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(dataForwardReceiver, new IntentFilter("capacitor-udp-forward"));
     }
 
     @Override
@@ -63,6 +86,10 @@ public class UdpPlugin extends Plugin {
         Log.i("lifecycle", "restart");
         startSelectorThread();
     }
+
+
+
+
 
     @PluginMethod()
     public void create(PluginCall call) {
@@ -661,10 +688,10 @@ public class UdpPlugin extends Plugin {
                 JSObject ret = new JSObject();
                 int bytesSent = channel.send(sendPacket.data, sendPacket.address);
                 ret.put("bytesSent", bytesSent);
-                sendPacket.call.success(ret);
+                if(sendPacket.call != null) sendPacket.call.success(ret);
             } catch (InterruptedException e) {
             } catch (IOException e) {
-                sendPacket.call.error(e.getMessage());
+                if(sendPacket.call != null) sendPacket.call.error(e.getMessage());
             }
         }
 
