@@ -1,11 +1,11 @@
 import { PluginListenerHandle } from '@capacitor/core';
-declare module "@capacitor/core/dist/esm/core-plugin-definitions" {
+declare module "@capacitor/core" {
     interface PluginRegistry {
         UdpPlugin: IUdpPlugin;
     }
 }
 export interface IUdpPlugin {
-    create (options?: {
+    create(options?: {
         properties?: {
             name?: string;
             bufferSize?: number;
@@ -13,33 +13,33 @@ export interface IUdpPlugin {
     }): Promise<{
         socketId: number;
     }>;
-    update (options: {
+    update(options: {
         socketId: number;
         properties: {
             name?: string;
             bufferSize?: number;
         };
     }): Promise<{}>;
-    setPaused (options: {
+    setPaused(options: {
         socketId: number;
         paused: boolean;
     }): Promise<{}>;
-    bind (options: {
+    bind(options: {
         socketId: number;
         address: string;
         port: number;
     }): Promise<{}>;
-    send (options: {
+    send(options: {
         socketId: number;
         address: string;
         port: number;
         buffer: string;
     }): Promise<{}>;
-    closeAllSockets (): Promise<{}>;
-    close (options: {
+    closeAllSockets(): Promise<{}>;
+    close(options: {
         socketId: number;
     }): Promise<{}>;
-    getInfo (options: {
+    getInfo(options: {
         socketId: number;
     }): Promise<{
         socketId: number;
@@ -49,7 +49,7 @@ export interface IUdpPlugin {
         localAddress?: string;
         localPort?: number;
     }>;
-    getSockets (): Promise<{
+    getSockets(): Promise<{
         sockets: [{
             socketId: number;
             bufferSize: number;
@@ -59,32 +59,32 @@ export interface IUdpPlugin {
             localPort?: number;
         }];
     }>;
-    joinGroup (options: {
+    joinGroup(options: {
         socketId: number;
         address: string;
     }): Promise<{}>;
-    leaveGroup (options: {
+    leaveGroup(options: {
         socketId: number;
         address: string;
     }): Promise<{}>;
-    setMulticastTimeToLive (options: {
+    setMulticastTimeToLive(options: {
         socketId: number;
         ttl: number;
     }): Promise<{}>;
-    setBroadcast (options: {
+    setBroadcast(options: {
         socketId: number;
         enabled: boolean;
     }): Promise<{}>;
-    setMulticastLoopbackMode (options: {
+    setMulticastLoopbackMode(options: {
         socketId: number;
         enabled: boolean;
     }): Promise<{}>;
-    getJoinedGroups (): Promise<{
+    getJoinedGroups(): Promise<{
         groups: [string];
     }>;
-    addListener (eventName: "receive", listenerFunc: (params: {
+    addListener(events: "receive", functions: (params: {
         socketId: number;
         buffer: string;
     }) => void): PluginListenerHandle;
-    addListener (eventName: "receiveError", listenerFunc: (params: string) => void): PluginListenerHandle;
+    addListener(events: "receiveError", functions: (params: string) => void): PluginListenerHandle;
 }
