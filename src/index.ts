@@ -1,7 +1,6 @@
 export * from './definitions';
 export * from './web';
 
-const textEncoder = ("TextEncoder" in window) ? new TextEncoder() : null;
 export const UdpPluginUtils = {
     bufferToString: function (buffer: ArrayBuffer): string {
         const charcodes = new Uint8Array(buffer);
