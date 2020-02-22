@@ -40,7 +40,8 @@ public class UdpPlugin: CAPPlugin {
         nextSocketId+=1
         sockets[socket.socketId] = socket;
         try? socket.socket?.enableReusePort(true)
-        call.success(["socketId":socket.socketId])
+        
+        call.success(["socketId":socket.socketId,"ipv4":socket.getIPv4Address(),"ipv6":socket.getIPv6Address() ])
     }
     
     
@@ -174,6 +175,7 @@ public class UdpPlugin: CAPPlugin {
         }
         socket?.broadcastEnabled = enabled ?? false
         try? socket?.socket?.enableBroadcast(enabled ?? false)
+        call.success();
     }
     
     @objc func joinGroup(_ call: CAPPluginCall) {
@@ -191,7 +193,6 @@ public class UdpPlugin: CAPPlugin {
         do {
             try socket?.socket?.joinMulticastGroup(address ?? "", onInterface: "en0")
             socket?.multicastGroup.insert(address ?? "")
-            try? socket?.socket?.joinMulticastGroup(address ?? "ff02::01", onInterface: "en0")
             call.success()
         } catch {
             call.error("joinGroup error")
@@ -367,6 +368,82 @@ public class UdpPlugin: CAPPlugin {
         func udpSocketDidClose(_ sock: GCDAsyncUdpSocket, withError error: Error?) {
             plugin?.notifyListeners("receiveError", data: ["socketId":self.socketId ,"error":"socket closed"], retainUntilConsumed: false)
         }
+        
+      func getIPv6Address() -> String? {
+          var address : String?
+
+          // Get list of all interfaces on the local machine:
+          var ifaddr : UnsafeMutablePointer<ifaddrs>?
+          guard getifaddrs(&ifaddr) == 0 else { return nil }
+          guard let firstAddr = ifaddr else { return nil }
+
+          // For each interface ...
+          for ifptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
+              let interface = ifptr.pointee
+
+              // Check for IPv4 or IPv6 interface:
+              let addrFamily = interface.ifa_addr.pointee.sa_family
+              if addrFamily == UInt8(AF_INET6) {
+
+                  // Check interface name:
+                  let name = String(cString: interface.ifa_name)
+                  if  name == "en0" {
+                      var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                      getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
+                                  &hostname, socklen_t(hostname.count),
+                                  nil, socklen_t(0), NI_NUMERICHOST)
+                      address = String(cString: hostname)
+                  }
+              }
+          }
+          freeifaddrs(ifaddr)
+        if (address != nil){
+            let index = address!.firstIndex(of: "%") ?? address?.endIndex
+            let beginning = address![..<index!]
+            let shortAddress = String(beginning)
+            return shortAddress
+            
+        } else {
+            return nil;
+        }
+
+        // beginning is "Hello"
+
+        // Convert the result to a String for long-term storage.
+        
+        
+
+      }
+        
+    func getIPv4Address() -> String? {
+        var address : String?
+        // Get list of all interfaces on the local machine:
+        var ifaddr : UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&ifaddr) == 0 else { return nil }
+        guard let firstAddr = ifaddr else { return nil }
+
+        // For each interface ...
+        for ifptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
+            let interface = ifptr.pointee
+
+            // Check for IPv4 or IPv6 interface:
+            let addrFamily = interface.ifa_addr.pointee.sa_family
+            if addrFamily == UInt8(AF_INET) {
+
+                // Check interface name:
+                let name = String(cString: interface.ifa_name)
+                if  name == "en0" {
+                    var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                    getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
+                                &hostname, socklen_t(hostname.count),
+                                nil, socklen_t(0), NI_NUMERICHOST)
+                    address = String(cString: hostname)
+                }
+            }
+        }
+        freeifaddrs(ifaddr)
+        return address
+    }
         
     }
 }

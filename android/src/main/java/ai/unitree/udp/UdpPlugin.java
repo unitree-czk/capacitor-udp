@@ -58,13 +58,14 @@ public class UdpPlugin extends Plugin {
             int socketId = intent.getIntExtra("socketId", -1);
             String address = intent.getStringExtra("address");
             int port = intent.getIntExtra("port", -1);
-            byte [] data = intent.getByteArrayExtra("data");
+            byte[] data = intent.getByteArrayExtra("data");
             try {
                 UdpSocket socket = obtainSocket(socketId);
                 if (!socket.isBound) throw new Exception("Not bound yet");
                 socket.addSendPacket(address, port, data, null);
                 addSelectorMessage(socket, SelectorMessageType.SO_ADD_WRITE_INTEREST, null);
-            } catch (Exception e){}
+            } catch (Exception e) {
+            }
 
         }
     };
@@ -88,9 +89,6 @@ public class UdpPlugin extends Plugin {
     }
 
 
-
-
-
     @PluginMethod()
     public void create(PluginCall call) {
         try {
@@ -99,12 +97,12 @@ public class UdpPlugin extends Plugin {
             sockets.put(Integer.valueOf(socket.getSocketId()), socket);
             JSObject ret = new JSObject();
             ret.put("socketId", socket.getSocketId());
-
-            socket.ipv4Address = getIPAddress(true);
-            socket.ipv6Address = getIPAddress(false);
+            ret.put("ipv4", socket.ipv4Address.getHostAddress());
+            String ipv6 = socket.ipv6Address.getHostAddress();
+            int ip6InterfaceIndex = ipv6.indexOf("%");
+            ret.put("ipv6", ipv6.substring(0, ip6InterfaceIndex));
 
             call.success(ret);
-
 
         } catch (Exception e) {
             call.error("create error");
@@ -329,7 +327,12 @@ public class UdpPlugin extends Plugin {
         JSObject ret = new JSObject();
         try {
             ret.put("socketId", socketId);
-            ret.put("remoteAddress", address);
+            int ip6InterfaceIndex = address.indexOf("%");
+            if (ip6InterfaceIndex > 0) {
+                ret.put("remoteAddress", address.substring(0, ip6InterfaceIndex));
+            } else {
+                ret.put("remoteAddress", address);
+            }
             ret.put("remotePort", port);
             String bufferString = new String(Base64.encode(data, Base64.DEFAULT));
             ret.put("buffer", bufferString);
@@ -372,12 +375,26 @@ public class UdpPlugin extends Plugin {
         T_STOP;
     }
 
+    private NetworkInterface getNetworkInterface() {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                if (addrs.size() < 2) continue;
+                if (addrs.get(0).isLoopbackAddress()) continue;
+                return intf;
+            }
+        } catch (Exception ignored) {
+        } // for now eat exceptions
+        return null;
+    }
 
     private InetAddress getIPAddress(boolean useIPv4) {
         try {
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface intf : interfaces) {
                 List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                if (addrs.size() < 2) continue;
                 for (InetAddress addr : addrs) {
                     if (!addr.isLoopbackAddress()) {
                         String sAddr = addr.getHostAddress();
@@ -535,16 +552,20 @@ public class UdpPlugin extends Plugin {
         private int bufferSize;
 
         private MulticastReadThread multicastReadThread;
-        private boolean mulicastLoopback;
+        private boolean multicastLoopback;
         private InetAddress ipv4Address;
         private InetAddress ipv6Address;
+        private NetworkInterface networkInterface;
 
 
         UdpSocket(int socketId, JSObject properties) throws JSONException, IOException {
             this.socketId = socketId;
-
+            this.ipv4Address = getIPAddress(true);
+            this.ipv6Address = getIPAddress(false);
+            this.networkInterface = getNetworkInterface();
             channel = DatagramChannel.open();
             channel.configureBlocking(false);
+            channel.setOption(StandardSocketOptions.IP_MULTICAST_IF, this.networkInterface);
             multicastSocket = null;
 
             // set socket default options
@@ -553,7 +574,7 @@ public class UdpPlugin extends Plugin {
             name = "";
 
             multicastReadThread = null;
-            mulicastLoopback = true;
+            multicastLoopback = true;
 
             isBound = false;
 
@@ -619,7 +640,6 @@ public class UdpPlugin extends Plugin {
 
         private void bindMulticastSocket() throws SocketException {
             multicastSocket.bind(new InetSocketAddress(channel.socket().getLocalPort()));
-            // multicastSocket.setInterface(ipv6Address);
 
             if (!paused) {
                 multicastReadThread = new MulticastReadThread(multicastSocket);
@@ -635,11 +655,14 @@ public class UdpPlugin extends Plugin {
                 multicastSocket = new MulticastSocket(null);
                 multicastSocket.setReuseAddress(true);
                 multicastSocket.setLoopbackMode(false);
+
+
                 if (channel.socket().isBound()) {
                     bindMulticastSocket();
                 }
             }
         }
+
         private void resumeMulticastSocket() {
             if (pausedMulticastPacket != null) {
                 sendMulticastPacket(pausedMulticastPacket);
@@ -651,12 +674,14 @@ public class UdpPlugin extends Plugin {
                 multicastReadThread.start();
             }
         }
+
         void setPaused(boolean paused) {
             this.paused = paused;
             if (!this.paused) {
                 resumeMulticastSocket();
             }
         }
+
         void addSendPacket(String address, int port, byte[] data, PluginCall call) {
             UdpSendPacket sendPacket = new UdpSendPacket(address, port, data, call);
             try {
@@ -688,10 +713,10 @@ public class UdpPlugin extends Plugin {
                 JSObject ret = new JSObject();
                 int bytesSent = channel.send(sendPacket.data, sendPacket.address);
                 ret.put("bytesSent", bytesSent);
-                if(sendPacket.call != null) sendPacket.call.success(ret);
+                if (sendPacket.call != null) sendPacket.call.success(ret);
             } catch (InterruptedException e) {
             } catch (IOException e) {
-                if(sendPacket.call != null) sendPacket.call.error(e.getMessage());
+                if (sendPacket.call != null) sendPacket.call.error(e.getMessage());
             }
         }
 
@@ -737,7 +762,8 @@ public class UdpPlugin extends Plugin {
             }
 
             multicastGroups.add(address);
-            multicastSocket.joinGroup(InetAddress.getByName(address));
+            multicastSocket.joinGroup(new InetSocketAddress(InetAddress.getByName(address), channel.socket().getLocalPort()), networkInterface);
+
         }
 
         void leaveGroup(String address) throws UnknownHostException, IOException {
@@ -755,7 +781,7 @@ public class UdpPlugin extends Plugin {
         void setMulticastLoopbackMode(boolean enabled, PluginCall call) throws IOException {
             upgradeToMulticastSocket();
             multicastSocket.setLoopbackMode(!enabled);
-            mulicastLoopback = enabled;
+            multicastLoopback = enabled;
             JSObject ret = new JSObject();
             ret.put("enabled", !multicastSocket.getLoopbackMode());
             call.success(ret);
@@ -788,7 +814,7 @@ public class UdpPlugin extends Plugin {
                 recvBuffer.flip();
                 byte[] recvBytes = new byte[recvBuffer.limit()];
                 recvBuffer.get(recvBytes);
-                if(address.getAddress().getHostAddress().contains(":")&&multicastSocket!=null){
+                if (address.getAddress().getHostAddress().contains(":") && multicastSocket != null) {
                     return;
                 }
                 sendReceiveEvent(recvBytes, socketId, address.getAddress().getHostAddress(), address.getPort());
@@ -817,7 +843,7 @@ public class UdpPlugin extends Plugin {
                         byte[] out = new byte[socket.getReceiveBufferSize()];
                         DatagramPacket packet = new DatagramPacket(out, out.length);
                         socket.receive(packet);
-                        if (!mulicastLoopback) {
+                        if (!multicastLoopback) {
                             String fromAddress = packet.getAddress().getHostAddress();
                             String ip4 = ipv4Address.getHostAddress();
                             String ip6 = ipv6Address.getHostAddress();
