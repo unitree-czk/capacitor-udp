@@ -29,6 +29,33 @@ Isn't it amazing!
 $ npm install capacitor-udp
 ```
 
+## TypeScript Special Mention!!!
+```js
+declare module '@capacitor/core'
+```
+sometimes fail to work as expected. I guess the dirty solution like changing the core-plugin-definitions.ts might be the most trust-worthy solution. 
+
+For instance,
+
+```js
+import { Plugin, PluginListenerHandle } from './definitions';
+import {IUdpPlugin} from "capacitor-udp"
+export interface PluginRegistry {
+    Accessibility: AccessibilityPlugin;
+    App: AppPlugin;
+    BackgroundTask: BackgroundTaskPlugin;
+    Browser: BrowserPlugin;
+    // .............
+    UdpPlugin:IUdpPlugin;
+    [pluginName: string]: {
+        [prop: string]: any;
+    };
+}
+```
+
+
+
+
 ## Usage
 
 ```js
@@ -38,11 +65,6 @@ import {UdpPluginUtils} from "capacitor-udp"; // if you want support for convert
 ```
 For intellisense or typescript, you might need to edit the file in @capacitor/core/dist/esm/core-plugin-definitions.ts. Make sure that this file is actually loaded, since there might be other node_modules folders.
 
-For VS Code on Mac, 
-```js
-declare module '@capacitor/core'
-```
-sometimes fail to work as expected. I guess the dirty solution like changing the core-plugin-definitions.ts might be the most trust-worthy solution. 
 
 ## API Reference
 
