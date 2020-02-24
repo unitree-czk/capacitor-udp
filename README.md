@@ -2,6 +2,10 @@
 UDP Plugin for Capacitor inspired from cordova-plugin-chrome-apps-sockets-udp!
 Support both IPv6 and IPv4, multicast and broadcast!
 
+For debugging, check out the Udper app developed using this plugin!
+https://play.google.com/store/apps/details?id=xyz.chenzhongkai.udper&hl=en_US
+
+
 With capacitor, it is possible to write following code:
 ```js
 async function process (){
