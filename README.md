@@ -29,6 +29,9 @@ Isn't it amazing!
 $ npm install capacitor-udp
 ```
 
+For android development, don't forget to add the plugin class in the MainActivity!
+
+
 ## TypeScript Special Mention!!!
 ```js
 declare module '@capacitor/core'
