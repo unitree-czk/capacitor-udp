@@ -12,8 +12,8 @@ export interface IUdpPlugin {
         };
     }): Promise<{
         socketId: number;
-        ipv4:string;
-        ipv6:string;
+        ipv4: string;
+        ipv6: string;
     }>;
     update(options: {
         socketId: number;
