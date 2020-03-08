@@ -100,12 +100,18 @@ public class UdpPlugin extends Plugin {
             ret.put("ipv4", socket.ipv4Address.getHostAddress());
             String ipv6 = socket.ipv6Address.getHostAddress();
             int ip6InterfaceIndex = ipv6.indexOf("%");
-            ret.put("ipv6", ipv6.substring(0, ip6InterfaceIndex));
+            if(ip6InterfaceIndex > 0) {
+                ret.put("ipv6", ipv6.substring(0, ip6InterfaceIndex));
+            }
+            else
+            {
+                ret.put("ipv6", ipv6);
+            }
 
             call.success(ret);
 
         } catch (Exception e) {
-            call.error("create error");
+            call.reject("create error", e);
         }
     }
 
